@@ -94,19 +94,32 @@ For a physical iPhone, install the XCUITest driver and provide the Apple signing
 
 ```bash
 appium driver install xcuitest
-./scripts/download-sample-apps.sh ios
+./scripts/download-sample-apps.sh ios-device
 
 mvn clean test \
   -Dcucumber.filter.tags="@device" \
   -Dframework.platform=ios \
   -Ddevice.name="iPhone" \
   -Ddevice.udid="<device-udid>" \
-  -Dapp.path="test-apps/my-demo-app-ios-2.2.2.ipa" \
+  -Dapp.path="test-apps/my-demo-app-ios-device-2.2.2.ipa" \
   -Dios.xcode.org.id="<apple-team-id>" \
   -Dios.updated.wda.bundle.id="<unique-wda-bundle-id>"
 ```
 
-The application may need to be re-signed for the target iPhone. In a device cloud, upload the IPA through the provider and pass its application reference as `app.path`.
+The application may need to be re-signed for the target iPhone. Device-cloud application references will be handled by the CI execution module rather than treated as local filesystem paths.
+
+For an Xcode Simulator, use the simulator build and omit all signing properties:
+
+```bash
+./scripts/download-sample-apps.sh ios-simulator
+
+mvn clean test \
+  -Dcucumber.filter.tags="@device" \
+  -Dframework.platform=ios \
+  -Ddevice.name="iPhone 15 Pro" \
+  -Ddevice.udid="<simulator-udid>" \
+  -Dapp.path="test-apps/my-demo-app-ios-simulator-2.2.2.zip"
+```
 
 ## Repository roadmap
 

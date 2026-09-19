@@ -31,17 +31,23 @@ case "${requested_platform}" in
             "https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk" \
             "${application_directory}/my-demo-app-android-2.2.0.apk"
         ;;
-    ios)
+    ios|ios-device)
         download \
             "https://github.com/saucelabs/my-demo-app-ios/releases/download/2.2.2/SauceLabs-Demo-App.ipa" \
-            "${application_directory}/my-demo-app-ios-2.2.2.ipa"
+            "${application_directory}/my-demo-app-ios-device-2.2.2.ipa"
+        ;;
+    ios-simulator)
+        download \
+            "https://github.com/saucelabs/my-demo-app-ios/releases/download/2.2.2/SauceLabs-Demo-App.Simulator.zip" \
+            "${application_directory}/my-demo-app-ios-simulator-2.2.2.zip"
         ;;
     all)
         "$0" android
-        "$0" ios
+        "$0" ios-device
+        "$0" ios-simulator
         ;;
     *)
-        echo "Usage: $0 [android|ios|all]" >&2
+        echo "Usage: $0 [android|ios-device|ios-simulator|all]" >&2
         exit 2
         ;;
 esac
