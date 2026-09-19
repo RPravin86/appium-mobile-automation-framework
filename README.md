@@ -4,7 +4,7 @@ Production-oriented Java and Cucumber automation for native Android and iOS appl
 
 ## Current module
 
-`03-mobile-interactions` adds the shared interaction boundary used by screen objects. It provides explicit waits, platform-aware locators, W3C mobile gestures, interaction timing logs, and a base screen contract without coupling Cucumber steps to Appium calls.
+`04-commerce-tests` adds the first real-device business scenario against Sauce Labs My Demo App. The scenario selects a catalog product, adds it to the cart, and verifies the same product is present. Android and iOS use the same Gherkin and step definitions while screen objects own their platform-specific locators.
 
 ## Prerequisites
 
@@ -65,11 +65,48 @@ Element lookup uses an explicit wait configured with `interaction.wait.seconds` 
 
 `PlatformLocator` keeps Android and iOS selectors together at the screen-object boundary. `MobileGestures` translates a shared swipe direction into the correct Appium command: `mobile: swipeGesture` for UiAutomator2 and `mobile: swipe` for XCUITest. Gesture distances are validated before a device command is sent.
 
-The interaction scenarios are device-independent and run with the normal suite:
+Foundation and interaction scenarios are device-independent and run with the normal suite:
 
 ```bash
 mvn clean test
 ```
+
+## Run the commerce scenario
+
+Real-device scenarios use the `@device` tag and are excluded from the default build. This keeps compilation and architectural checks useful on laptops and CI workers that do not have a device allocated.
+
+Start Appium 3 with the appropriate driver, connect a device, and download the pinned sample application. For Android:
+
+```bash
+appium driver install uiautomator2
+./scripts/download-sample-apps.sh android
+adb devices
+
+mvn clean test \
+  -Dcucumber.filter.tags="@device" \
+  -Dframework.platform=android \
+  -Ddevice.name="Android Device" \
+  -Ddevice.udid="<device-udid>" \
+  -Dapp.path="test-apps/my-demo-app-android-2.2.0.apk"
+```
+
+For a physical iPhone, install the XCUITest driver and provide the Apple signing values required to build WebDriverAgent:
+
+```bash
+appium driver install xcuitest
+./scripts/download-sample-apps.sh ios
+
+mvn clean test \
+  -Dcucumber.filter.tags="@device" \
+  -Dframework.platform=ios \
+  -Ddevice.name="iPhone" \
+  -Ddevice.udid="<device-udid>" \
+  -Dapp.path="test-apps/my-demo-app-ios-2.2.2.ipa" \
+  -Dios.xcode.org.id="<apple-team-id>" \
+  -Dios.updated.wda.bundle.id="<unique-wda-bundle-id>"
+```
+
+The application may need to be re-signed for the target iPhone. In a device cloud, upload the IPA through the provider and pass its application reference as `app.path`.
 
 ## Repository roadmap
 
