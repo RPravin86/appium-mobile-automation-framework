@@ -22,7 +22,9 @@ public class ConfigurationSteps {
     private FrameworkConfig configuration;
     private RuntimeException configurationFailure;
     private String previousDeviceName;
+    private String previousPlatform;
     private boolean deviceNameOverridden;
+    private boolean platformOverrideCleared;
 
     @Given("a valid Android configuration file")
     public void createAndroidConfiguration() throws IOException {
@@ -38,6 +40,9 @@ public class ConfigurationSteps {
 
     @Given("a configuration file with platform {string}")
     public void createConfigurationWithPlatform(String platform) throws IOException {
+        previousPlatform = System.getProperty("framework.platform");
+        platformOverrideCleared = previousPlatform != null;
+        System.clearProperty("framework.platform");
         configurationFile = writeConfiguration(platform, "Test Device");
     }
 
@@ -79,6 +84,9 @@ public class ConfigurationSteps {
             } else {
                 System.setProperty("device.name", previousDeviceName);
             }
+        }
+        if (platformOverrideCleared) {
+            System.setProperty("framework.platform", previousPlatform);
         }
         if (configurationFile != null) {
             Files.deleteIfExists(configurationFile);
