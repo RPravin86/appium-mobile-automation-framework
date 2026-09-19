@@ -19,6 +19,10 @@ public final class CatalogScreen extends BaseScreen {
             By.id(ANDROID_PACKAGE + "titleTV"),
             AppiumBy.accessibilityId("Product Name")
     );
+    private static final PlatformLocator FIRST_PRODUCT = new PlatformLocator(
+            By.id(ANDROID_PACKAGE + "productIV"),
+            AppiumBy.accessibilityId("ProductItem")
+    );
 
     public CatalogScreen(AppiumDriver driver, FrameworkConfig config) {
         super(driver, config);
@@ -29,9 +33,8 @@ public final class CatalogScreen extends BaseScreen {
     }
 
     public String openFirstProduct() {
-        By productName = locator(FIRST_PRODUCT_NAME);
-        String selectedProduct = actions.readText(productName);
-        actions.tap(productName);
+        String selectedProduct = actions.readText(locator(FIRST_PRODUCT_NAME));
+        actions.tap(locator(FIRST_PRODUCT));
         return selectedProduct;
     }
 }
