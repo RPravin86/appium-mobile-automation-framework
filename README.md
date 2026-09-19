@@ -45,6 +45,18 @@ The current baseline uses Appium Java Client `10.1.1` with Selenium `4.44.0`. Ap
 
 BDD execution uses Cucumber JVM `7.34.8` and JUnit Platform `6.1.3`.
 
+## Configuration precedence
+
+Runtime values are resolved in this order:
+
+```text
+JVM system property → environment variable → platform properties → safe default
+```
+
+For example, `device.udid` can be supplied as either `-Ddevice.udid=...` or `DEVICE_UDID`. Real-device execution requires an explicit UDID so the framework never selects whichever device happens to appear first.
+
+The default files are `config/common.properties` plus either `config/android.properties` or `config/ios.properties`. Keep machine-specific values outside Git by using system properties, environment variables, or an ignored `*.local.properties` file.
+
 ## Repository roadmap
 
 The framework is developed using stacked branches:
