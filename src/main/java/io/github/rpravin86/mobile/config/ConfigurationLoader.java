@@ -34,6 +34,10 @@ public final class ConfigurationLoader {
         return new ConfigurationLoader(read(configFile)).build();
     }
 
+    public static String resolve(String key, String defaultValue) {
+        return resolve(key, read(DEFAULT_CONFIG_DIRECTORY.resolve("common.properties")), defaultValue);
+    }
+
     private FrameworkConfig build() {
         MobilePlatform platform = MobilePlatform.from(required("framework.platform"));
         ServerMode serverMode = ServerMode.from(value("appium.server.mode", "remote"));

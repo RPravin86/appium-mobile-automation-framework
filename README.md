@@ -4,7 +4,7 @@ Production-oriented Java and Cucumber automation for native Android and iOS appl
 
 ## Current module
 
-`04-commerce-tests` adds the first real-device business scenario against Sauce Labs My Demo App. The scenario selects a catalog product, adds it to the cart, and verifies the same product is present. Android and iOS use the same Gherkin and step definitions while screen objects own their platform-specific locators.
+`05-reporting-evidence` adds an Extent Spark execution report, step-level scenario results, failure screenshots, screen recordings, and interaction timing logs. Device recordings are compressed to browser-compatible H.264 so the report remains practical to retain as a CI artifact.
 
 ## Prerequisites
 
@@ -70,6 +70,30 @@ Foundation and interaction scenarios are device-independent and run with the nor
 ```bash
 mvn clean test
 ```
+
+The generated Extent report is available at `reports/extent/index.html`. Cucumber JSON and JUnit XML remain under `target/cucumber-reports` for CI systems that consume machine-readable results.
+
+## Evidence and recording policy
+
+Failure screenshots are saved under `reports/evidence/screenshots` and embedded directly in the failed Extent scenario. Every `@device` scenario is recorded when `evidence.video.enabled=true`. The recording is saved under `reports/evidence/videos` and linked from the scenario in the report.
+
+FFmpeg compresses recordings using H.264, CRF 32, a maximum width of 720 pixels, and no audio. These defaults keep videos readable while substantially reducing artifact size. Adjust them per run when needed:
+
+```bash
+mvn test \
+  -Devidence.video.crf=30 \
+  -Devidence.video.max.width=1080 \
+  -Devidence.video.keep.raw=true
+```
+
+Install and verify FFmpeg before device execution:
+
+```bash
+brew install ffmpeg
+ffmpeg -version
+```
+
+Recording or compression failures are treated as evidence warnings rather than product-test failures. When compression fails, the raw MP4 is retained for diagnosis.
 
 ## Run the commerce scenario
 

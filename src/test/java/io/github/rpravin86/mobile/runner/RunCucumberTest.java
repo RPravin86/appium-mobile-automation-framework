@@ -14,7 +14,8 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "io.github.rpravin86.mobile")
 @ConfigurationParameter(
         key = PLUGIN_PROPERTY_NAME,
-        value = "pretty, json:target/cucumber-reports/cucumber.json, junit:target/cucumber-reports/cucumber.xml"
+        value = "pretty, io.github.rpravin86.mobile.reporting.ExtentCucumberReporter, "
+                + "json:target/cucumber-reports/cucumber.json, junit:target/cucumber-reports/cucumber.xml"
 )
 public class RunCucumberTest {
 }

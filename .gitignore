@@ -16,6 +16,7 @@ screenshots/
 test-apps/*.apk
 test-apps/*.aab
 test-apps/*.ipa
+test-apps/*.zip
 test-apps/*.app/
 config/*.local.properties
 .env
