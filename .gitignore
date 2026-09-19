@@ -1,0 +1,25 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven
+target/
+.flattened-pom.xml
+
+# Test evidence
+reports/
+logs/
+recordings/
+screenshots/
+
+# Local applications and device configuration
+test-apps/*.apk
+test-apps/*.aab
+test-apps/*.ipa
+test-apps/*.app/
+config/*.local.properties
+.env
+
+# Operating systems
+.DS_Store
+Thumbs.db
