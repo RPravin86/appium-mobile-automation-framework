@@ -160,9 +160,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                    <systemPropertyVariables>
-                        <file.encoding>UTF-8</file.encoding>
-                    </systemPropertyVariables>
+                    <argLine>-Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
         </plugins>
