@@ -55,6 +55,8 @@ public final class ConfigurationLoader {
                 value("ios.xcode.signing.id", "iPhone Developer"),
                 value("ios.updated.wda.bundle.id", ""),
                 Duration.ofSeconds(integer("appium.new.command.timeout.seconds", 120)),
+                Duration.ofSeconds(integer("interaction.wait.seconds", 15)),
+                Duration.ofMillis(integer("interaction.poll.millis", 250)),
                 bool("appium.no.reset", false),
                 bool("appium.full.reset", false)
         );

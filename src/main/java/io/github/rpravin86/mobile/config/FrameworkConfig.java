@@ -21,6 +21,8 @@ public record FrameworkConfig(
         String xcodeSigningId,
         String updatedWdaBundleId,
         Duration newCommandTimeout,
+        Duration elementWaitTimeout,
+        Duration elementPollingInterval,
         boolean noReset,
         boolean fullReset
 ) {
@@ -36,6 +38,15 @@ public record FrameworkConfig(
         }
         if (deviceUdid == null || deviceUdid.isBlank()) {
             throw new IllegalArgumentException("device.udid is required for deterministic real-device execution");
+        }
+        if (elementWaitTimeout.isZero() || elementWaitTimeout.isNegative()) {
+            throw new IllegalArgumentException("interaction.wait.seconds must be greater than zero");
+        }
+        if (elementPollingInterval.isZero() || elementPollingInterval.isNegative()) {
+            throw new IllegalArgumentException("interaction.poll.millis must be greater than zero");
+        }
+        if (elementPollingInterval.compareTo(elementWaitTimeout) > 0) {
+            throw new IllegalArgumentException("interaction.poll.millis cannot exceed the element wait timeout");
         }
     }
 }

@@ -1,10 +1,10 @@
 # Appium Mobile Automation Framework
 
-Production-oriented Java and Cucumber automation for native Android and iOS applications. The framework is being delivered as a sequence of reviewable modules; this branch contains the project foundation only.
+Production-oriented Java and Cucumber automation for native Android and iOS applications. The framework is being delivered as a sequence of reviewable modules.
 
 ## Current module
 
-`01-project-foundation` establishes the build contract and dependency baseline. Device sessions, application screens, evidence capture, and CI pipelines are intentionally added in later branches so each architectural layer can be reviewed independently.
+`03-mobile-interactions` adds the shared interaction boundary used by screen objects. It provides explicit waits, platform-aware locators, W3C mobile gestures, interaction timing logs, and a base screen contract without coupling Cucumber steps to Appium calls.
 
 ## Prerequisites
 
@@ -56,6 +56,20 @@ JVM system property → environment variable → platform properties → safe de
 For example, `device.udid` can be supplied as either `-Ddevice.udid=...` or `DEVICE_UDID`. Real-device execution requires an explicit UDID so the framework never selects whichever device happens to appear first.
 
 The default files are `config/common.properties` plus either `config/android.properties` or `config/ios.properties`. Keep machine-specific values outside Git by using system properties, environment variables, or an ignored `*.local.properties` file.
+
+Element lookup uses an explicit wait configured with `interaction.wait.seconds` and `interaction.poll.millis`. Screen objects inherit these settings through `BaseScreen`; individual tests should not add sleeps or create their own wait policies.
+
+## Interaction boundary
+
+`MobileActions` owns element lookup, tapping, text entry, visibility checks, and disappearance waits. Each operation records elapsed time at `DEBUG` level, which gives us useful performance diagnostics without cluttering normal execution logs.
+
+`PlatformLocator` keeps Android and iOS selectors together at the screen-object boundary. `MobileGestures` translates a shared swipe direction into the correct Appium command: `mobile: swipeGesture` for UiAutomator2 and `mobile: swipe` for XCUITest. Gesture distances are validated before a device command is sent.
+
+The interaction scenarios are device-independent and run with the normal suite:
+
+```bash
+mvn clean test
+```
 
 ## Repository roadmap
 
