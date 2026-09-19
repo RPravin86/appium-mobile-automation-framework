@@ -4,7 +4,7 @@ Production-oriented Java and Cucumber automation for native Android and iOS appl
 
 ## Current module
 
-`05-reporting-evidence` adds an Extent Spark execution report, step-level scenario results, failure screenshots, screen recordings, and interaction timing logs. Device recordings are compressed to browser-compatible H.264 so the report remains practical to retain as a CI artifact.
+`06-ci-execution` adds repeatable execution for GitHub Actions, Azure Pipelines, and Jenkins. Hosted agents run the device-independent verification suite; explicitly labelled self-hosted agents run Android devices, iOS simulators, or physical iPhones and publish the same reports and evidence.
 
 ## Prerequisites
 
@@ -127,6 +127,7 @@ mvn clean test \
   -Ddevice.udid="<device-udid>" \
   -Dapp.path="test-apps/my-demo-app-ios-device-2.2.2.ipa" \
   -Dios.xcode.org.id="<apple-team-id>" \
+  -Dios.xcode.signing.id="Apple Development" \
   -Dios.updated.wda.bundle.id="<unique-wda-bundle-id>"
 ```
 
@@ -144,6 +145,43 @@ mvn clean test \
   -Ddevice.udid="<simulator-udid>" \
   -Dapp.path="test-apps/my-demo-app-ios-simulator-2.2.2.zip"
 ```
+
+## CI execution
+
+The default CI path runs `mvn clean test` on Java 17 without requiring Appium or a device. All three pipeline implementations publish Extent, Cucumber, Surefire, log, screenshot, and video output even when a test fails.
+
+### GitHub Actions
+
+`.github/workflows/ci.yml` runs automatically for `main`, numbered module branches, and pull requests. `.github/workflows/device-tests.yml` is manual because a workflow must not claim a shared physical device unexpectedly.
+
+Register self-hosted runners with these labels:
+
+- Android: `self-hosted`, `mobile`, `android`
+- iOS: `self-hosted`, `mobile`, `macOS`, `ios`
+
+Each device runner requires Java 17, Maven, Appium, FFmpeg, `curl`, and its platform tooling. Install UiAutomator2 on Android agents and XCUITest on macOS agents. Physical-iPhone runs also use the repository secrets `IOS_XCODE_ORG_ID` and `IOS_UPDATED_WDA_BUNDLE_ID`.
+
+### Azure Pipelines
+
+`azure-pipelines.yml` runs verification on `ubuntu-latest`. Set `runDeviceTests=true` only after creating the self-hosted pool named by `mobileAgentPool`. Supply `FRAMEWORK_PLATFORM`, `DEVICE_NAME`, `DEVICE_UDID`, and `IOS_TARGET` as pipeline variables; store Apple signing values as secret variables.
+
+### Jenkins
+
+The `Jenkinsfile` always runs verification and exposes an optional device stage. Set `DEVICE_AGENT_LABEL` to the agent holding the allocated device. Apple signing values should be injected as protected environment variables or Jenkins credentials on the iOS agent.
+
+### Shared device entry point
+
+All device pipelines call the same checked-in script, which prevents CI implementations from drifting apart:
+
+```bash
+FRAMEWORK_PLATFORM=android \
+DEVICE_NAME="Android Device" \
+DEVICE_UDID="<device-udid>" \
+START_APPIUM=true \
+./scripts/run-device-tests.sh
+```
+
+For iOS, set `FRAMEWORK_PLATFORM=ios` and `IOS_TARGET=simulator` or `device`. The script validates required values, downloads the correct pinned application when absent, optionally manages the Appium process, and shuts down only the server process it started.
 
 ## Repository roadmap
 

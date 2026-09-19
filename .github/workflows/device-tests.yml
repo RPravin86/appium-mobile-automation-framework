@@ -1,0 +1,93 @@
+name: Mobile device execution
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Device target allocated to the self-hosted runner
+        required: true
+        type: choice
+        options:
+          - android
+          - ios-simulator
+          - ios-device
+      device_name:
+        description: Appium device name
+        required: true
+        type: string
+      device_udid:
+        description: Connected device or booted simulator UDID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    if: inputs.platform == 'android'
+    runs-on: [self-hosted, mobile, android]
+    timeout-minutes: 30
+    env:
+      FRAMEWORK_PLATFORM: android
+      DEVICE_NAME: ${{ inputs.device_name }}
+      DEVICE_UDID: ${{ inputs.device_udid }}
+      START_APPIUM: 'true'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Execute Android scenario
+        run: ./scripts/run-device-tests.sh
+      - name: Upload Android evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-evidence-${{ github.run_number }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            reports/
+            logs/
+            target/cucumber-reports/
+            target/surefire-reports/
+
+  ios:
+    if: startsWith(inputs.platform, 'ios-')
+    runs-on: [self-hosted, mobile, macOS, ios]
+    timeout-minutes: 40
+    env:
+      FRAMEWORK_PLATFORM: ios
+      IOS_TARGET: ${{ inputs.platform == 'ios-device' && 'device' || 'simulator' }}
+      DEVICE_NAME: ${{ inputs.device_name }}
+      DEVICE_UDID: ${{ inputs.device_udid }}
+      IOS_XCODE_ORG_ID: ${{ secrets.IOS_XCODE_ORG_ID }}
+      IOS_XCODE_SIGNING_ID: ${{ inputs.platform == 'ios-device' && 'Apple Development' || '' }}
+      IOS_UPDATED_WDA_BUNDLE_ID: ${{ secrets.IOS_UPDATED_WDA_BUNDLE_ID }}
+      START_APPIUM: 'true'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Execute iOS scenario
+        run: ./scripts/run-device-tests.sh
+      - name: Upload iOS evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-evidence-${{ github.run_number }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            reports/
+            logs/
+            target/cucumber-reports/
+            target/surefire-reports/

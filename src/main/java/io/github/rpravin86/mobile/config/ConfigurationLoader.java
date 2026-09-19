@@ -56,7 +56,7 @@ public final class ConfigurationLoader {
                 bool("android.auto.grant.permissions", true),
                 value("ios.bundle.id", ""),
                 value("ios.xcode.org.id", ""),
-                value("ios.xcode.signing.id", "iPhone Developer"),
+                value("ios.xcode.signing.id", ""),
                 value("ios.updated.wda.bundle.id", ""),
                 Duration.ofSeconds(integer("appium.new.command.timeout.seconds", 120)),
                 Duration.ofSeconds(integer("interaction.wait.seconds", 15)),

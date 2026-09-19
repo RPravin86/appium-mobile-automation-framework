@@ -1,0 +1,110 @@
+trigger:
+  branches:
+    include:
+      - main
+      - 0*-*
+
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: runDeviceTests
+    displayName: Run on a self-hosted mobile agent
+    type: boolean
+    default: false
+  - name: mobileAgentPool
+    displayName: Self-hosted mobile agent pool
+    type: string
+    default: MobileDevicePool
+
+variables:
+  FRAMEWORK_PLATFORM: android
+  DEVICE_NAME: Mobile Device
+  DEVICE_UDID: ''
+  IOS_TARGET: simulator
+  IOS_XCODE_ORG_ID: ''
+  IOS_XCODE_SIGNING_ID: ''
+  IOS_UPDATED_WDA_BUNDLE_ID: ''
+
+stages:
+  - stage: Verify
+    jobs:
+      - job: FrameworkVerification
+        pool:
+          vmImage: ubuntu-latest
+        timeoutInMinutes: 15
+        steps:
+          - task: Maven@4
+            displayName: Run device-independent suite
+            inputs:
+              mavenPomFile: pom.xml
+              goals: clean test
+              options: --batch-mode --no-transfer-progress
+              publishJUnitResults: true
+              testResultsFiles: target/surefire-reports/TEST-*.xml
+              javaHomeOption: JDKVersion
+              jdkVersionOption: '1.17'
+              mavenVersionOption: Default
+
+          - task: CopyFiles@2
+            displayName: Stage verification evidence
+            condition: always()
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: |
+                reports/**
+                logs/**
+                target/cucumber-reports/**
+                target/surefire-reports/**
+              targetFolder: $(Build.ArtifactStagingDirectory)/verification
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish verification evidence
+            condition: always()
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/verification
+              artifact: framework-verification-$(Build.BuildId)
+              publishLocation: pipeline
+
+  - stage: Device
+    dependsOn: Verify
+    condition: and(succeeded(), ${{ eq(parameters.runDeviceTests, true) }})
+    jobs:
+      - job: MobileDeviceExecution
+        pool:
+          name: ${{ parameters.mobileAgentPool }}
+        timeoutInMinutes: 40
+        steps:
+          - script: ./scripts/run-device-tests.sh
+            displayName: Execute allocated mobile device
+            env:
+              FRAMEWORK_PLATFORM: $(FRAMEWORK_PLATFORM)
+              DEVICE_NAME: $(DEVICE_NAME)
+              DEVICE_UDID: $(DEVICE_UDID)
+              IOS_TARGET: $(IOS_TARGET)
+              IOS_XCODE_ORG_ID: $(IOS_XCODE_ORG_ID)
+              IOS_XCODE_SIGNING_ID: $(IOS_XCODE_SIGNING_ID)
+              IOS_UPDATED_WDA_BUNDLE_ID: $(IOS_UPDATED_WDA_BUNDLE_ID)
+              START_APPIUM: 'true'
+
+          - task: CopyFiles@2
+            displayName: Stage mobile evidence
+            condition: always()
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: |
+                reports/**
+                logs/**
+                target/cucumber-reports/**
+                target/surefire-reports/**
+              targetFolder: $(Build.ArtifactStagingDirectory)/mobile
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish mobile evidence
+            condition: always()
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/mobile
+              artifact: mobile-evidence-$(Build.BuildId)
+              publishLocation: pipeline
